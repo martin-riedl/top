@@ -10,6 +10,7 @@ object Top
   * Provides a sorting function to perform topological sorting
   */
 trait TopologicalOrdering {
+
   /**
     * sorts a list of unsorted elements of type ELEM in topological order
     *
@@ -19,10 +20,15 @@ trait TopologicalOrdering {
     * elements by mapping for each element of type ELEM the set of dependencies in terms of the identifier
     * @return the topological sorted list of elements of type ELEM
     */
-  def sort[ID,ELEM](unsorted : List[ELEM], getId : ELEM => ID, dependsOn : ELEM => Set[ID]) : List[ELEM] = {
+  def sort[ID,ELEM](
+                     unsorted : List[ELEM],
+                     getId : ELEM => ID,
+                     dependsOn : ELEM => Set[ID]
+                   ) : List[ELEM] =
+  {
     val idsToConsider = Set(unsorted.map(getId(_)) :_*)
-    val elementMap = HashMap(unsorted.map(e=> (getId(e), e)).toList :_*)
-    val dependability = HashMap((unsorted map { e =>(getId(e) -> dependsOn(e))}).toList :_*)
+    val elementMap = HashMap(unsorted.map(e=> (getId(e), e)) :_*)
+    val dependability = HashMap((unsorted map { e =>(getId(e) -> dependsOn(e))}) :_*)
 
     val L = new scala.collection.mutable.ListBuffer[ID]()   // empty list that will contain the sorted nodes
     val S = unsorted.map(getId(_)) // set of all nodes with no incoming edge
@@ -53,6 +59,7 @@ trait TopologicalOrdering {
   * acyclic dependent elements
   */
 trait TopologicalOrderedProcessing extends TopologicalOrdering {
+
   /**
     * function that sorts and processes acyclic dependent elements
     *
@@ -70,13 +77,12 @@ trait TopologicalOrderedProcessing extends TopologicalOrdering {
                                         getId : SOURCE => ID,
                                         dependsOn : SOURCE => Set[ID],
                                         process : (SOURCE, List[TARGET]) => TARGET
-                                      ) = {
-
+                                      ) =
+  {
     sort(unsorted,getId,dependsOn).foldLeft(Map[ID,TARGET]())((processed, current) => {
       val deps = dependsOn(current)
       val processedDeps = processed.filter(a => deps contains a._1).map(_._2).toList
       processed + (getId(current) -> process(current, processedDeps))
     }).map(_._2).toList
-
   }
 }

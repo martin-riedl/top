@@ -1,4 +1,10 @@
 # TOP - Topological Sorting and Processing
+```sequence
+Alice->Bob: Hello Bob, how are you?
+Note right of Bob: Bob thinks
+Bob-->Alice: I am good thanks!
+```
+
 
 ```scala
 
@@ -12,10 +18,11 @@ val dependencies = HashMap[Int,Set[Int]](
 
 Top.sortAndProcess(
   unsorted, (e:Int)=> e,
-  (e:Int) => depMap_1(e),
+  (e:Int) => dependencies(e),
   (source: Int, targets : List[Int]) => {
     targets.foldLeft(source)(_ + _)
   }
 )
+
 ```
 should result List(4,6,13,14)
