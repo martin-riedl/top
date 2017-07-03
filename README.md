@@ -1,10 +1,9 @@
 # TOP - Topological Sorting and Processing
-```sequence
-Alice->Bob: Hello Bob, how are you?
-Note right of Bob: Bob thinks
-Bob-->Alice: I am good thanks!
-```
 
+This project provides an algorithm to sort (and process) a given list of objects 
+that have loop-free interdependencies. 
+
+## Usage Example
 
 ```scala
 
@@ -23,6 +22,8 @@ Top.sortAndProcess(
     targets.foldLeft(source)(_ + _)
   }
 )
-
 ```
-should result List(4,6,13,14)
+should result 
+```scala
+List(4,6,13,14)
+```
