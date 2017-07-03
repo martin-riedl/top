@@ -4,7 +4,6 @@ import scala.collection.immutable.HashMap
 
 object Top 
   extends TopologicalOrdering 
-  with OrderedProcessing 
   with TopologicalOrderedProcessing
 
 /**
@@ -50,46 +49,19 @@ trait TopologicalOrdering {
 }
 
 /**
-  * Provides a function to perform some kind of operation on a topological sorted list
-  */
-trait OrderedProcessing {
-  /**
-    * function that performs an operation on each element
-    *
-    * @param topologicalsorted a list of elements of type SOURCE
-    * @param process a function that processes a source element of type SOURCE
-    * to some target element of type TARGET, by providing the already processed dependencies,
-    * i.e in terms of a list of elements of type TARGET
-    * @return a list of processed elements of type TARGET
-    */
-  def perform[SOURCE,ID,TARGET](
-                              topologicalsorted: List[SOURCE],
-                              process : (SOURCE, List[TARGET]) => TARGET,
-                              getId : SOURCE => ID,
-                              dependsOn : SOURCE => Set[ID]
-                            ) : List[TARGET] = {
-
-    topologicalsorted.foldLeft(Map[ID,TARGET]())((processed, current) => {
-      val deps = dependsOn(current)
-      val processedDeps = processed.filter(a => deps contains a._1).map(_._2).toList
-      processed + (getId(current) -> process(current, processedDeps))
-    }).map(_._2).toList
-  }
-
-}
-
-/**
   * Trait that incorporates both, the topological ordering and the processing, to provide a single function to process
   * acyclic dependent elements
   */
-trait TopologicalOrderedProcessing extends TopologicalOrdering with OrderedProcessing {
+trait TopologicalOrderedProcessing extends TopologicalOrdering {
   /**
     * function that sorts and processes acyclic dependent elements
     *
     * @param unsorted (see [[TopologicalOrdering#sort]])
     * @param getId (see [[TopologicalOrdering#sort]])
     * @param dependsOn (see [[TopologicalOrdering#sort]])
-    * @param process (see [[OrderedProcessing#perform]])
+    * @param process a function that processes a source element of type SOURCE
+    * to some target element of type TARGET, by providing the already processed dependencies,
+    * i.e in terms of a list of elements of type TARGET
     *
     * @return a list of processed elements of type TARGET
     */
@@ -99,6 +71,12 @@ trait TopologicalOrderedProcessing extends TopologicalOrdering with OrderedProce
                                         dependsOn : SOURCE => Set[ID],
                                         process : (SOURCE, List[TARGET]) => TARGET
                                       ) = {
-    perform(sort(unsorted,getId,dependsOn), process, getId, dependsOn)
+
+    sort(unsorted,getId,dependsOn).foldLeft(Map[ID,TARGET]())((processed, current) => {
+      val deps = dependsOn(current)
+      val processedDeps = processed.filter(a => deps contains a._1).map(_._2).toList
+      processed + (getId(current) -> process(current, processedDeps))
+    }).map(_._2).toList
+
   }
 }
